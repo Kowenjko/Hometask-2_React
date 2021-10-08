@@ -23,10 +23,14 @@ const NoteItem = (props) => {
       <td>
         <FontAwesomeIcon icon={iconCategory[category]} />
       </td>
-      <td>{name}</td>
+      <td>
+        <div className='truncate'>{name}</div>
+      </td>
       <td>{created}</td>
       <td>{category}</td>
-      <td>{content}</td>
+      <td>
+        <div className='truncate'>{content}</div>
+      </td>
       <td>{dates}</td>
       <td>
         <FontAwesomeIcon className='icon' onClick={onEdit} icon={faPen} />

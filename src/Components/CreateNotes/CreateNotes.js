@@ -12,7 +12,7 @@ import {
 class CreateNotes extends Component {
   state = {
     name: "",
-    category: "",
+    category: "Task",
     content: "",
   };
   // -----------------------------------
@@ -21,42 +21,29 @@ class CreateNotes extends Component {
     const nameNote = e.target.name;
     this.setState({ [nameNote]: name });
   };
+  getDate = (name) => {
+    const pattern = /(\d{1,2})[\.|\-\/](\d{1,2})[\.|\-|\/](\d{4})/g;
+    return name.match(pattern) ? name.match(pattern).toString() : null;
+  };
   // -----------------------------------
   SendForm = (e) => {
     e.preventDefault();
-    const pattern = /(\d{1,2})[\.|\-\/](\d{1,2})[\.|\-|\/](\d{4})/g;
     const { name, category, content } = this.state;
     const { onCreateNotes, editTrue, editTrueNote, List, onAddNotes, notesTotal, CurrentNotes } =
       this.props;
+
     const newNotes = {
       id: editTrue ? CurrentNotes.id : uuidv4(),
-      name: name
-        ? name.length > 15
-          ? name.substring(0, 12) + "..."
-          : name
-        : editTrue
-        ? CurrentNotes.name
-        : name,
+      name: name ? name : editTrue ? CurrentNotes.name : name,
       created: new Date().toDateString(),
       category: category ? category : editTrue ? CurrentNotes.category : category,
-      content: content
-        ? content.length > 20
-          ? content.substring(0, 17) + "..."
-          : content
-        : editTrue
-        ? CurrentNotes.content
-        : content,
-      dates: content
-        ? content.match(pattern)
-          ? content.match(pattern).toString()
-          : null
-        : editTrue
-        ? CurrentNotes.dates
-        : null,
+      content: content ? content : editTrue ? CurrentNotes.content : content,
+      dates: content ? this.getDate(content) : editTrue ? CurrentNotes.dates : null,
     };
     let tmpList = List.slice();
     let tmpNotesTotal = notesTotal.slice();
     const indexTotal = tmpNotesTotal.findIndex((elem) => elem.category === newNotes.category);
+    console.log(indexTotal);
     const index = List.findIndex((elem) => elem.id === newNotes.id);
     // якщо додаємо
     if (!editTrue) {
@@ -110,7 +97,7 @@ class CreateNotes extends Component {
                       value={editTrue ? (category ? category : CurrentNotes.category) : category}
                       name='category'
                     >
-                      <option value='Task' selected>
+                      <option value='Task' selected disabled>
                         Open this select category
                       </option>
                       <option value='Task'>Task</option>

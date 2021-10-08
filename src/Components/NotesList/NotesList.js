@@ -16,86 +16,51 @@ import {
 import CreateNotes from "../CreateNotes/CreateNotes";
 
 class NotesList extends Component {
-  componentDidUpdate() {
-    this.onTotal();
-  }
-  // Підраховуємо категорії----
-  findNotes = (obj) => {
-    let res = Object.values(
-      obj.reduce((a, { category }) => {
-        a[category] = a[category] || { category, count: 0 };
-        a[category].count++;
-        return a;
-      }, Object.create(null))
-    );
-    return res;
-  };
-  // -----записуємо в store------
-  onTotal = () => {
-    const { notesTotal, List, ListArchive } = this.props;
-    let ListNote = List.slice();
-    let ListArchiveNote = ListArchive.slice();
-    let notesTotalNote = notesTotal.slice();
-    let TotalList = this.findNotes(ListNote);
-    let TotalArchiveList = this.findNotes(ListArchiveNote);
-
-    for (let i = 0; i < notesTotalNote.length; i++) {
-      for (let j = 0; j < TotalList.length; j++) {
-        if (notesTotal[i].category === TotalList[j].category) {
-          notesTotal[i].active = TotalList[j].count;
-        }
-      }
-      for (let n = 0; n < TotalArchiveList.length; n++) {
-        if (notesTotal[i].category === TotalArchiveList[n].category) {
-          notesTotal[i].archive = TotalArchiveList[n].count;
-        }
-      }
-    }
-  };
   // ---------------------------------------------
-  onCreate = () => {
+  sendActions = (current, edit) => {
     const { onCreateNotes, editCreate, editTrueNote, CurrentNotes } = this.props;
     onCreateNotes(editCreate ? false : true);
-    editTrueNote(false);
-    CurrentNotes(null);
+    CurrentNotes(current);
+    editTrueNote(edit);
+  };
+
+  // ---------------------------------------------
+  onCreate = () => {
+    this.sendActions(null, false);
   };
   // ---------------------------------------------
   onEdit = (id) => {
-    const { onCreateNotes, editCreate, editTrueNote, CurrentNotes, List } = this.props;
+    const { List } = this.props;
     const index = List.findIndex((elem) => elem.id === id);
-    CurrentNotes(List[index]);
-    onCreateNotes(editCreate ? false : true);
-    editTrueNote(true);
+    this.sendActions(List[index], true);
+  };
+  // ---------------------------------------------
+  delElement = (id, select) => {
+    const { onAddNotes, notesTotalNote, notesTotal, List } = this.props;
+    const index = List.findIndex((elem) => elem.id === id);
+    let tmpNotesTotal = notesTotal.slice();
+    const indexTotal = tmpNotesTotal.findIndex((elem) => elem.category === List[index].category);
+    let partOne = List.slice(0, index);
+    let partTwo = List.slice(index + 1);
+    onAddNotes([...partOne, ...partTwo]);
+    tmpNotesTotal[indexTotal].active--;
+    if (select) {
+      tmpNotesTotal[indexTotal].archive++;
+    }
+    notesTotalNote(tmpNotesTotal);
   };
   // ---------------------------------------------
   onDelete = (id) => {
-    const { onAddNotes, List, notesTotal, notesTotalNote } = this.props;
-    const index = List.findIndex((elem) => elem.id === id);
-    let tmpNotesTotal = notesTotal.slice();
-    const indexTotal = tmpNotesTotal.findIndex((elem) => elem.category === List[index].category);
-    tmpNotesTotal[indexTotal].active--;
-    let partOne = List.slice(0, index);
-    let partTwo = List.slice(index + 1);
-    let tmpList = [...partOne, ...partTwo];
-    onAddNotes(tmpList);
-    notesTotalNote(tmpNotesTotal);
+    this.delElement(id, false);
   };
   // ---------------------------------------------
   onArchive = (id) => {
-    const { onAddNotes, List, notesTotal, notesTotalNote, AddArchive, ListArchive } = this.props;
+    const { List, AddArchive, ListArchive } = this.props;
     const index = List.findIndex((elem) => elem.id === id);
-    let tmpNotesTotal = notesTotal.slice();
-    const indexTotal = tmpNotesTotal.findIndex((elem) => elem.category === List[index].category);
-    tmpNotesTotal[indexTotal].active--;
-    tmpNotesTotal[indexTotal].archive++;
-    let partOne = List.slice(0, index);
-    let partTwo = List.slice(index + 1);
-    let tmpList = [...partOne, ...partTwo];
     let tmpListArchive = ListArchive.slice();
     tmpListArchive.push(List[index]);
-    onAddNotes(tmpList);
     AddArchive(tmpListArchive);
-    notesTotalNote(tmpNotesTotal);
+    this.delElement(id, true);
   };
   // ---------------------------------------------
   render() {

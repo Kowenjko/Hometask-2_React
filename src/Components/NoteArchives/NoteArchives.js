@@ -12,17 +12,17 @@ import {
 } from "../../Actions/NoteListActions";
 
 class NoteArchives extends Component {
-  // Вертаємо назад з архіву
+  // --------------------------------------
+  delOneElement = (obj, i, obj_2) => {
+    const { AddArchive, notesTotalNote } = this.props;
+    let partOne = obj.slice(0, i);
+    let partTwo = obj.slice(i + 1);
+    AddArchive([...partOne, ...partTwo]);
+    notesTotalNote(obj_2);
+  };
+  // Вертаємо назад з архіву------
   onBackArchive = (id) => {
-    const {
-      ListArchive,
-      notesTotal,
-      List,
-      AddArchive,
-      onAddNotes,
-      archiveViewNote,
-      notesTotalNote,
-    } = this.props;
+    const { ListArchive, notesTotal, List, onAddNotes, archiveViewNote } = this.props;
     const index = ListArchive.findIndex((elem) => elem.id === id);
     let tmpNotesTotal = notesTotal.slice();
     const indexTotal = tmpNotesTotal.findIndex(
@@ -30,15 +30,12 @@ class NoteArchives extends Component {
     );
     tmpNotesTotal[indexTotal].active++;
     tmpNotesTotal[indexTotal].archive--;
-    let partOne = ListArchive.slice(0, index);
-    let partTwo = ListArchive.slice(index + 1);
-    let tmpListArchive = [...partOne, ...partTwo];
+
     let tmpList = List.slice();
     tmpList.push(ListArchive[index]);
     onAddNotes(tmpList);
-    AddArchive(tmpListArchive);
     archiveViewNote(false);
-    notesTotalNote(tmpNotesTotal);
+    this.delOneElement(ListArchive, index, tmpNotesTotal);
   };
 
   render() {
